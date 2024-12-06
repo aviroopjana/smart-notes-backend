@@ -1,39 +1,49 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import AttachmentModel from '../models/attachment';
+import { handleError, handleSuccess } from '../utils/responseUtils';
 
 // Upload a new attachment
-export const uploadAttachment = async (req: Request, res: Response) => {
+export const uploadAttachment = async (req: Request, res: Response, next: NextFunction) => {
   try {
+    const { fileName, fileType, fileSize, path } = req.body;
+
+    if (!fileName || !fileType || !fileSize || !path) {
+      return handleError(res, 'Missing required fields', 400);
+    }
+
     const attachment = await AttachmentModel.create(req.body);
-    res.status(201).json(attachment);
+    return handleSuccess(res, attachment, 201);
   } catch (error) {
-    res.status(400).json({ message: 'Error uploading attachment', error });
+    return next(error);
   }
 };
 
 // Get an attachment by ID
-export const getAttachmentById = async (req: Request, res: Response) => {
+export const getAttachmentById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const attachment = await AttachmentModel.findById(req.params.id);
+
     if (!attachment) {
-      return res.status(404).json({ message: 'Attachment not found' });
+      return handleError(res, 'Attachment not found', 404);
     }
-    res.status(200).json(attachment);
+
+    return handleSuccess(res, attachment);
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching attachment', error });
+    return next(error);
   }
 };
 
 // Delete an attachment
-export const deleteAttachment = async (req: Request, res: Response) => {
+export const deleteAttachment = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const attachment = await AttachmentModel.findByIdAndDelete(req.params.id);
+
     if (!attachment) {
-      return res.status(404).json({ message: 'Attachment not found' });
+      return handleError(res, 'Attachment not found', 404);
     }
-    res.status(200).json({ message: 'Attachment deleted successfully' });
+
+    return handleSuccess(res, { message: 'Attachment deleted successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting attachment', error });
+    return next(error);
   }
 };
-

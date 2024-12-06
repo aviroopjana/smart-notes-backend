@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Application } from 'express';
 import dotenv from 'dotenv';
 import connectDB from './config/db';
 import noteRoutes from './routes/note.route';
@@ -6,7 +6,7 @@ import attachmentRoutes from './routes/attachment.route';
 
 dotenv.config();
 
-const app = express();
+const app: Application = express();
 
 //middlewares
 app.use(express.json());

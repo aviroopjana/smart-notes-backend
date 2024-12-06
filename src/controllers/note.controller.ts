@@ -1,121 +1,110 @@
 import { Request, Response, NextFunction } from 'express';
 import NoteModel from '../models/note';
 import { Note } from '../types/models';
-
-type NoteRequestBody = {
-  title: string;
-  content: string;
-  tags: string[];
-  category: string;
-  createdBy: string;
-  attachments?: string[];
-};
+import { handleError, handleSuccess } from '../utils/responseUtils';
 
 // Get a note by ID
-export const getNoteById = async (req: Request, res: Response, next: NextFunction) => {
+export const getNoteById = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const { id } = req.params;
-    const note = await NoteModel.findById(id);
+
+    const note = await NoteModel.findById(id).lean();
     if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
+      handleError(res, 'Note not found', 404);
+      return;
     }
-    return res.status(200).json(note);
+
+    handleSuccess(res, note);
   } catch (error) {
     next(error);
-    return res.status(500).json({ message: 'Error fetching note', error });
   }
 };
 
-// Update a note
-export const updateNote = async (req: Request, res: Response) => {
+// Create a new note
+export const createNote = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { id } = req.params;
-    const note = await NoteModel.findByIdAndUpdate(id, req.body, { new: true });
-    if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
-    }
-    return res.status(200).json(note);
-  } catch (error) {
-    return res.status(400).json({ message: 'Error updating note', error });
-  }
-};
+    const { id, title, content, tags, category, createdBy, attachments, version }: Note = req.body;
 
-// Delete a note
-export const deleteNote = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const note = await NoteModel.findByIdAndDelete(id);
-    if (!note) {
-      return res.status(404).json({ message: 'Note not found' });
-    }
-    return res.status(200).json({ message: 'Note deleted successfully' });
-  } catch (error) {
-    return res.status(500).json({ message: 'Error deleting note', error });
-  }
-};
-
-// // Create a note
-// export const createNote = async (req: Request, res: Response) => {
-//   // try {
-//   //   const note = new NoteModel(req.body);
-//   //   await note.save();
-//   //   return res.status(201).json(note);
-//   // } catch (error) {
-//   //   return res.status(400).json({ message: 'Error creating note', error });
-//   // }
-// };
-
-// Create a note
-export const createNote = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    // Extract the body with proper typing
-    const { title, content, tags, category, createdBy, attachments }: NoteRequestBody = req.body;
-
-    // Ensure the required fields are present
-    if (!title || !content || !tags || !category || !createdBy) {
-      return res.status(400).json({ message: 'Missing required fields' });
+    if (!id || !title || !content || !tags || !category || !createdBy) {
+      handleError(res, 'Missing required fields', 400);
+      return;
     }
 
-    // Create a new note instance
-    const note = new NoteModel({
+    const newNote = new NoteModel({
+      id,
       title,
       content,
       tags,
       category,
       createdBy,
-      attachments,
+      attachments: attachments || [],
+      version: version || 0,
     });
 
-    // Save the note to the database
-    const savedNote = await note.save();
-
-    // Return the saved note
-    return res.status(201).json(savedNote);
+    const savedNote = await newNote.save();
+    handleSuccess(res, savedNote, 201);
   } catch (error) {
-    // Handle errors
     next(error);
-    return res.status(400).json({ message: 'Error creating note', error });
   }
 };
 
+// Update an existing note
+export const updateNote = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const updatedNote = await NoteModel.findByIdAndUpdate(id, req.body, { new: true, runValidators: true }).lean();
+    if (!updatedNote) {
+      handleError(res, 'Note not found', 404);
+      return;
+    }
+
+    handleSuccess(res, updatedNote);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete a note
+export const deleteNote = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+
+    const deletedNote = await NoteModel.findByIdAndDelete(id).lean();
+    if (!deletedNote) {
+      handleError(res, 'Note not found', 404);
+      return;
+    }
+
+    handleSuccess(res, { message: 'Note deleted successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
 
 // Get all notes
-export const getAllNotes = async (req: Request, res: Response): Promise<Response> => {
+export const getAllNotes = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const notes = await NoteModel.find();
-    return res.status(200).json(notes);
+    const notes = await NoteModel.find().lean();
+    handleSuccess(res, notes);
   } catch (error) {
-    return res.status(500).json({ message: 'Error fetching notes', error });
+    next(error);
   }
 };
 
 // Search notes
-export const searchNotes = async (req: Request, res: Response): Promise<Response> => {
+export const searchNotes = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
-    const { query } = req.query;
-    const notes = await NoteModel.find({ $text: { $search: query as string } });
-    return res.status(200).json(notes);
+    const query = req.query.query as string;
+
+    if (!query) {
+      handleError(res, 'Query parameter is required', 400);
+      return;
+    }
+
+    const notes = await NoteModel.find({ $text: { $search: query } }).lean();
+    handleSuccess(res, notes);
   } catch (error) {
-    return res.status(500).json({ message: 'Error searching notes', error });
+    next(error);
   }
 };
