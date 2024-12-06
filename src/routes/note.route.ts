@@ -3,14 +3,15 @@ import { createNote, deleteNote, getAllNotes, getNoteById, searchNotes, updateNo
 
 const router = express.Router();
 
+// Search Route
+router.get('/search', searchNotes);
+
 // CRUD Routes
 router.post('/', createNote);
 router.get('/', getAllNotes);
 router.get('/:id', getNoteById);
 router.put('/:id', updateNote);
 router.delete('/:id', deleteNote);
-
-// Search Route
-router.get('/search', searchNotes);
+ 
 
 export default router;

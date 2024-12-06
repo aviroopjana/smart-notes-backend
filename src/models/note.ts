@@ -1,19 +1,22 @@
-import { Schema, model } from 'mongoose';
-import { Note } from '../types/models';
+import mongoose, { Schema, Document } from 'mongoose';
 
-const noteSchema = new Schema<Note>({
-  id: { type: String, required: true },
+const NoteSchema: Schema = new Schema({
+  id: { type: String, required: true, unique: true },
   title: { type: String, required: true },
   content: { type: String, required: true },
-  tags: { type: [String], required: true },
+  tags: { type: [String], index: true },
   category: { type: String, required: true },
-  createdBy: { type: String, required: true },
-  createdAt: { type: Date, required: true, default: Date.now },
-  updatedAt: { type: Date, required: true, default: Date.now },
-  attachments: { type: [String], required: true },
-  version: { type: Number, required: true }
+  createdBy: { type: String, required: true, index: true },
+  attachments: { type: [String], default: [] },
+  version: { type: Number, default: 0 },
+}, {
+  timestamps: true,
 });
 
-const NoteModel = model<Note>('Note', noteSchema);
+// Add a compound index (for advanced search)
+NoteSchema.index({ createdBy: 1, category: 1 });
 
-export default NoteModel;
+// Add a text index for full-text search on title and content
+NoteSchema.index({ title: 'text', content: 'text' });
+
+export default mongoose.model<Document>('Note', NoteSchema);
