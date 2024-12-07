@@ -7,7 +7,7 @@ const NoteSchema: Schema = new Schema({
   tags: { type: [String], index: true },
   category: { type: String, required: true },
   createdBy: { type: String, required: true, index: true },
-  attachments: { type: [String], default: [] },
+  attachments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Attachment' }],
   version: { type: Number, default: 0 },
 }, {
   timestamps: true,
