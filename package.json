@@ -1,8 +1,11 @@
 {
   "name": "induced-ai-backend-sde",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/main.js",
   "scripts": {
+    "start": "node dist/main.js",
+    "dev": "ts-node-dev src/main.ts",
+    "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
