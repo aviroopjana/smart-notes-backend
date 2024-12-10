@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { performOCR } from "../services/ocr.service";
-import { parseReceiptData } from "../services/parsereceipt.service";
+import { parseReceiptData } from "../services/parseReceipt.service";
 
 export const parseReceipt = async (
   req: Request,
