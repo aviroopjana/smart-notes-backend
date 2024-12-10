@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import connectDB from './config/db';
 import noteRoutes from './routes/note.route';
 import attachmentRoutes from './routes/attachment.route';
+import { crudRateLimiter } from './middlewares/rateLimiter.middleware';
 
 dotenv.config();
 
@@ -13,8 +14,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // routes
-app.use('/api/notes', noteRoutes);
-app.use('/api/attachments', attachmentRoutes);
+app.use('/api/notes', crudRateLimiter, noteRoutes);
+app.use('/api/attachments', crudRateLimiter, attachmentRoutes);
 
 app.get('/', (req, res) => {
   res.send('Smart Notes Backend is running!');
