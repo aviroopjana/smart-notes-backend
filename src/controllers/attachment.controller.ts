@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
 import AttachmentModel, { IAttachment } from '../models/attachment';
 import { handleError, handleSuccess } from '../utils/responseUtils';
-import { uploadFileToStorage } from '../services/fileStorageService';
-import { extractDataFromFile } from '../services/dataExtractionService';
 import { Logger } from '../utils/logger';
+import { extractDataFromFile } from '../services/dataextraction.service';
+import { uploadFileToStorage } from '../services/filestorage.service';
 
 // Upload a new attachment
 export const uploadAttachment = async (req: Request, res: Response, next: NextFunction) => {
