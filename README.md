@@ -1,6 +1,6 @@
-﻿# Induced AI Backend SDE
+﻿# Smart Notes Backend
 
- A robust backend system designed to process, analyze, and manage notes, attachments, and AI-powered document summarization. This project demonstrates clean architecture, scalability, and maintainable code, using TypeScript, Express.js, and a MongoDB database.
+ A robust backend system designed to process, analyze, and manage notes, attachments, and AI-powered document summarization. This project demonstrates clean architecture, scalability, and maintainable code, using TypeScript, Node Js, Express Js, and MongoDB database.
 
 The API supports advanced AI integrations, such as OCR and text summarization, while adhering to best practices in software design and development.
 
